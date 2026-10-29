@@ -1,0 +1,41 @@
+{
+  "author": "AgentOS pixel_artist",
+  "assets": [
+    {
+      "file": "assets/sprites/weapons/longbow.png",
+      "size": [
+        54,
+        54
+      ],
+      "pivot": [
+        27,
+        27
+      ],
+      "facing": "east",
+      "frames": 1,
+      "alpha": [
+        0,
+        255
+      ],
+      "nearest_neighbor": true
+    },
+    {
+      "file": "assets/sprites/weapons/returning_spear.png",
+      "size": [
+        112,
+        22
+      ],
+      "pivot": [
+        56,
+        11
+      ],
+      "facing": "east",
+      "frames": 1,
+      "alpha": [
+        0,
+        255
+      ],
+      "nearest_neighbor": true
+    }
+  ]
+}

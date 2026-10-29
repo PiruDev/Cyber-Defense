@@ -23,10 +23,12 @@ from game.archer import Archer
 from game.worm import Worm
 from game.projectiles import Projectile
 from game.world import GameWorld
+from game.weapons import TrainingTarget
+from game.balance import BalanceConfig
 
 reports = Path("reports")
 reports.mkdir(exist_ok=True)
-world = GameWorld(rng=random.Random(13))
+world = GameWorld(rng=random.Random(13), config=BalanceConfig(weapon_card_chance=0))
 world.enemies.clear()
 world.grant_xp(700)
 assert world.pending_levelups == 4
@@ -50,13 +52,16 @@ def events():
                 pos=pygame.Rect(card_rects()[1]).center)]
     if frame in (51, 68):
         return [pygame.event.Event(pygame.KEYDOWN, key=pygame.K_2 if frame == 51 else pygame.K_3)]
+    if frame == 69:
+        # Ao retomar, o ataque depende de um alvo válido, sem tecla Espaço.
+        world.enemies=[TrainingTarget(world.player.x+40,world.player.y,hp=100,max_hp=100)]
     if frame > 69:
         raise AssertionError("Loop excedeu max_frames")
     return []
 
 class Keys:
     def __getitem__(self, key):
-        return key in (pygame.K_d, pygame.K_SPACE)
+        return key == pygame.K_d
 
 def checked_overlay(surface, state, fonts):
     before = pickle.dumps({k: v for k, v in vars(state).items() if not callable(v)})
@@ -91,6 +96,7 @@ assert sum(world.player.upgrades.values()) == 4
 assert abs(world.elapsed - 0.05) < 1e-9
 assert world.player.x > initial_x
 assert world.attack_timer > 0
+assert world.enemies[0].hp < 100
 assert not pygame.get_init()
 
 pygame.init()

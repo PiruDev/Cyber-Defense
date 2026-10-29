@@ -15,7 +15,7 @@ from game.worm import Worm
 
 class RogueliteTests(unittest.TestCase):
     def mundo(self):
-        mundo = GameWorld(arena=(32, 154, 1036, 530), rng=random.Random(31))
+        mundo = GameWorld(arena=(32, 154, 1036, 530), rng=random.Random(31), auto_attack=False)
         mundo.enemies.clear()
         mundo.drops.clear()
         mundo.player.x, mundo.player.y = 500, 400

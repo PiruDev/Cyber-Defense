@@ -8,9 +8,13 @@ from .combat import (
     apply_damage, apply_enemy_hit, in_cone, in_thrust, touching,
 )
 from .archer import Archer
-from .balance import BalanceConfig, WEAPON_CONFIGS
+from .balance import (BalanceConfig, WEAPON_CONFIGS, LONGBOW_MAX_HITS, SPEAR_PICKUP_RADIUS,
+                      SPEAR_SPIN_DURATION, SPEAR_SPIN_REACH, SPEAR_RETURN_DURATION)
 from .boss import Rootkit
-from .cards import apply_card, offer_cards
+from .cards import apply_card
+from .weapon_cards import WeaponCard, offer_level_cards
+from .auto_combat import nearest_target
+from .returning_spear import ReturningSpear
 from .drops import collect_drop, roll_drop
 from .effects import EffectSystem
 from .enemies import Drop, Enemy
@@ -23,18 +27,19 @@ from .progression import Progressao
 from .projectiles import Projectile
 from .swordsman import Swordsman
 from .waves import WaveManager
-from .weapons import TrainingTarget, WeaponSystem, WEAPON_CHOICES
+from .weapons import TrainingTarget, WeaponSystem, AttackPulse, WEAPON_CHOICES, LAB_WEAPON_CHOICES
 from .worm import Worm
 from .camera import Camera
 from .visual_config import WORLD_ARENA, ARENA_VIEWPORT
 
 
 class GameWorld:
-    def __init__(self, arena=WORLD_ARENA, rng=None, mode="defense", config=None):
+    def __init__(self, arena=WORLD_ARENA, rng=None, mode="defense", config=None, *, auto_attack=True):
         self.arena = tuple(arena)
         self.rng = rng if rng is not None else Random()
         self.config = config if config is not None else BalanceConfig()
         self.mode = GameMode(mode)
+        self.auto_attack = auto_attack
         self.restart()
 
     def restart(self, mode=None) -> None:
@@ -147,7 +152,8 @@ class GameWorld:
 
     def _offer_next_card(self) -> None:
         if self.pending_levelups and not self.card_choices:
-            self.card_choices = offer_cards(self.player.upgrades, self.rng)
+            self.card_choices = offer_level_cards(self.player, self.rng, self.weapon_id,
+                chance=self.config.weapon_card_chance, evolved_weight=self.config.evolved_weapon_weight)
             self.inventory_open = False
             self.effects.hitstop_timer = 0.0
             self.effects.shake_timer = 0.0
@@ -201,7 +207,11 @@ class GameWorld:
         card = self.card_choices[index]
         card_id = card.id
         first_stack = self.player.upgrades.get(card_id, 0) == 0
-        if not apply_card(self.player, card_id):
+        if isinstance(card, WeaponCard):
+            applied = self.equip_weapon(card.weapon_id)
+        else:
+            applied = apply_card(self.player, card_id)
+        if not applied:
             return False
         if first_stack and card_id == "regen":
             self.regen_timer = 0.0
@@ -237,6 +247,7 @@ class GameWorld:
         return value if isinstance(value, str) and value in WEAPON_CHOICES else None
 
     def _practice_bucket(self, weapon_id):
+        weapon_id = self._practice_key(weapon_id)
         if weapon_id not in self._practice_buckets:
             left, top, width, height = self.arena
             targets = []
@@ -254,12 +265,25 @@ class GameWorld:
             self._practice_buckets[weapon_id] = targets
         return self._practice_buckets[weapon_id]
 
+    @staticmethod
+    def _practice_key(weapon_id):
+        # Três grupos originais, sem gerar alvos extras ao testar evoluções.
+        return {"longbow": "bow", "returning_spear": "spear", "sword": "katana"}.get(weapon_id, weapon_id)
+
+    def equip_weapon(self, weapon_id):
+        """Troca atômica: não deixa flechas, giros ou lança da arma anterior."""
+        if not self.weapons.switch(weapon_id):
+            return False
+        self.projectiles = [p for p in self.projectiles if p.team != "player"]
+        self.attack_facing_x, self.attack_facing_y = self.player.facing_x, self.player.facing_y
+        return True
+
     def choose_weapon(self, value) -> bool:
         weapon_id = self._weapon_choice(value)
         if (weapon_id is None or not self.choosing_weapon or self.choosing_card
                 or self.pending_levelups or self.game_over or self.player.progression.hp <= 0):
             return False
-        self.weapons.switch(weapon_id)
+        self.equip_weapon(weapon_id)
         self.phase = "practice"
         self.practice_remaining = (self.config.defense_practice_seconds if self.mode == GameMode.DEFENSE
                                    else self.config.lab_practice_seconds)
@@ -271,15 +295,17 @@ class GameWorld:
         return True
 
     def switch_weapon(self, value) -> bool:
-        weapon_id = self._weapon_choice(value)
+        if isinstance(value, int) and not isinstance(value, bool):
+            weapon_id = LAB_WEAPON_CHOICES[value] if 0 <= value < len(LAB_WEAPON_CHOICES) else None
+        else:
+            weapon_id = value if isinstance(value, str) and value in LAB_WEAPON_CHOICES else None
         if (weapon_id is None or self.mode != GameMode.LABORATORY or self.phase != "practice"
                 or self.game_over or self.victory or self.inventory_open or self.choosing_card):
             return False
         if weapon_id == self.weapon_id:
             return True
-        self._practice_buckets[self.weapon_id] = self.enemies
-        self.weapons.switch(weapon_id)
-        self.projectiles = [projectile for projectile in self.projectiles if projectile.team != "player"]
+        self._practice_buckets[self._practice_key(self.weapon_id)] = self.enemies
+        self.equip_weapon(weapon_id)
         self.enemies = self._practice_bucket(weapon_id)
         return True
 
@@ -358,12 +384,25 @@ class GameWorld:
             return False
         return self.player.inventory.use_potion(self.player.progression)
 
-    def _attack(self) -> set:
-        if self.attack_cooldown > 1e-12:
+    def _attack(self, direction=None) -> set:
+        if not self.weapons.ready or getattr(self.player, "stun_timer", 0) > 0:
             return set()
-        self.attack_facing_x = self.player.facing_x
-        self.attack_facing_y = self.player.facing_y
-        return self._resolve_pulses(self.weapons.start(self.player))
+        self.attack_facing_x, self.attack_facing_y = direction or (self.player.facing_x, self.player.facing_y)
+        return self._resolve_pulses(self.weapons.start(self.player,
+                                   (self.attack_facing_x, self.attack_facing_y)))
+
+    def _auto_attack(self):
+        if not self.weapons.ready:
+            return set()
+        target = nearest_target(self.player, self.enemies,
+                                self.weapons.config.reach * self.player.attack_range / 70)
+        if target is None:
+            return set()
+        part = target[1]
+        dx, dy = part.x - self.player.x, part.y - self.player.y
+        length = hypot(dx, dy)
+        direction = (dx / length, dy / length) if length else (self.player.facing_x, self.player.facing_y)
+        return self._attack(direction)
 
     def _enemy_direction(self, enemy):
         """Orientação visual; não altera a direção capturada pelos ataques."""
@@ -400,13 +439,22 @@ class GameWorld:
     def _resolve_pulses(self, pulses) -> set:
         hit_ids = set()
         for pulse in pulses:
-            if pulse.weapon_id == "bow":
+            if pulse.weapon_id in ("bow", "longbow"):
                 if sum(projectile.team == "player" for projectile in self.projectiles) < self.config.max_player_projectiles:
-                    speed = WEAPON_CONFIGS["bow"].projectile_speed
+                    speed = WEAPON_CONFIGS[pulse.weapon_id].projectile_speed
                     self.projectiles.append(Projectile(self.player.x, self.player.y,
                         pulse.facing_x * speed, pulse.facing_y * speed, damage=pulse.damage,
                         radius=4, ttl=pulse.reach / speed + 0.1, team="player",
-                        range_remaining=pulse.reach))
+                        range_remaining=pulse.reach,
+                        max_hits=LONGBOW_MAX_HITS if pulse.weapon_id == "longbow" else 1,
+                        kind="piercing_arrow" if pulse.weapon_id == "longbow" else "arrow"))
+                continue
+            if pulse.weapon_id == "returning_spear":
+                speed = WEAPON_CONFIGS["returning_spear"].projectile_speed
+                self.weapons.returning_spear = ReturningSpear(Projectile(self.player.x, self.player.y,
+                    pulse.facing_x * speed, pulse.facing_y * speed, damage=pulse.damage,
+                    radius=pulse.width / 2, ttl=3, team="player", range_remaining=pulse.reach,
+                    kind="returning_spear"))
                 continue
             for enemy in self.enemies:
                 if enemy.hp <= 0:
@@ -461,7 +509,7 @@ class GameWorld:
         live_ids = {id(enemy) for enemy in survivors}
         self.enemy_motion = {key: value for key, value in self.enemy_motion.items() if key in live_ids}
         if self.phase == "practice":
-            self._practice_buckets[self.weapon_id] = survivors
+            self._practice_buckets[self._practice_key(self.weapon_id)] = survivors
             target_limit = self.config.training_targets * (3 if self.mode == GameMode.LABORATORY else 1)
             if self.practice_kills >= target_limit:
                 self._finish_practice()
@@ -540,6 +588,55 @@ class GameWorld:
             if self.game_over:
                 return
 
+    def _projectile_intersections(self, projectile):
+        intersections = []
+        for enemy in self.enemies:
+            if enemy.hp <= 0 or id(enemy) in projectile.hit_ids:
+                continue
+            targets = enemy.segments if isinstance(enemy, Worm) else (enemy,)
+            for target in targets:
+                fraction = projectile.hit_fraction(target)
+                if fraction is not None:
+                    intersections.append((fraction, enemy))
+        return sorted(intersections, key=lambda entry: entry[0])
+
+    def _advance_returning_spear(self, dt, spear):
+        hit_ids = set()
+        if spear is None or spear is not self.weapons.returning_spear:
+            return hit_ids
+        was_flying = not spear.landed
+        spear.advance(dt, self.arena)
+        projectile = spear.projectile
+        if was_flying:
+            intersections = self._projectile_intersections(projectile)
+            if intersections:
+                fraction, enemy = intersections[0]
+                x = projectile.previous_x + (projectile.x - projectile.previous_x) * fraction
+                y = projectile.previous_y + (projectile.y - projectile.previous_y) * fraction
+                if self._hit_enemy(enemy, x, y, damage=projectile.damage,
+                                   direction=(projectile.vx, projectile.vy)):
+                    projectile.hit_ids.add(id(enemy))
+                    hit_ids.add(id(enemy))
+                spear.land_at(x, y)
+        manual = (not spear.expired and spear.landed
+                  and hypot(self.player.x - spear.x, self.player.y - spear.y)
+                  <= self.player.radius + SPEAR_PICKUP_RADIUS)
+        if spear.expired or manual:
+            self.weapons.returning_spear = None
+            self.weapons.animation_timer = 0
+            self.weapons.cooldown = max(self.weapons.cooldown,
+                self.weapons.config.cooldown * self.player.attack_interval / .35)
+            if manual:
+                self.weapons.spin_timer = SPEAR_SPIN_DURATION
+                pulse = AttackPulse((-1, 0), "spin", self.player.damage * self.weapons.config.damage_multiplier,
+                                    1, 0, SPEAR_SPIN_REACH * self.player.attack_range / 70, 0, 360)
+                hit_ids.update(self._resolve_pulses((pulse,)))
+                self.effects.emit("attack", self.player.x, self.player.y)
+            else:
+                self.weapons.return_origin = spear.x, spear.y
+                self.weapons.return_timer = SPEAR_RETURN_DURATION
+        return hit_ids
+
     def _update_projectiles(self, dt, previous_projectiles) -> None:
         removed_ids = set()
         active_ids = {id(projectile) for projectile in self.projectiles}
@@ -549,27 +646,21 @@ class GameWorld:
             projectile.advance(dt)
             hit = False
             if projectile.team == "player":
-                intersections = []
-                for enemy in self.enemies:
-                    if enemy.hp <= 0:
+                for fraction, enemy in self._projectile_intersections(projectile):
+                    if id(enemy) in projectile.hit_ids or enemy.hp <= 0:
                         continue
-                    targets = enemy.segments if isinstance(enemy, Worm) else (enemy,)
-                    for target in targets:
-                        fraction = projectile.hit_fraction(target)
-                        if fraction is not None:
-                            intersections.append((fraction, enemy))
-                if intersections:
-                    fraction, enemy = min(intersections, key=lambda entry: entry[0])
                     x = projectile.previous_x + (projectile.x - projectile.previous_x) * fraction
                     y = projectile.previous_y + (projectile.y - projectile.previous_y) * fraction
-                    self._hit_enemy(enemy, x, y, damage=projectile.damage,
-                                    direction=(projectile.vx, projectile.vy))
-                    hit = True
-                    if (self.phase == "waves" and self.waves.spawned >= self.waves.total
-                            and all(candidate.hp <= 0 for candidate in self.enemies)):
-                        # O último acerto também remove flechas ainda não percorridas.
-                        self.projectiles.clear()
+                    if self._hit_enemy(enemy, x, y, damage=projectile.damage,
+                                       direction=(projectile.vx, projectile.vy)):
+                        projectile.hit_ids.add(id(enemy))
+                    hit = len(projectile.hit_ids) >= projectile.max_hits
+                    if hit:
                         break
+                if (self.phase == "waves" and self.waves.spawned >= self.waves.total
+                        and all(candidate.hp <= 0 for candidate in self.enemies)):
+                    self.projectiles.clear()
+                    break
             elif projectile.hits(self.player):
                 self._damage_player(projectile.damage)
                 hit = True
@@ -602,6 +693,7 @@ class GameWorld:
             dt = min(dt, self.practice_remaining)
         self.elapsed += dt
         previous_projectiles = list(self.projectiles)
+        previous_spear = self.weapons.returning_spear
         delayed_pulses = self.weapons.update(dt)
         self.damage_cooldown = max(0.0, self.damage_cooldown - dt)
         previous_player = self.player.x, self.player.y
@@ -610,7 +702,10 @@ class GameWorld:
         self.camera.update(self.player.x, self.player.y, dt)
         self.player.overclock_timer = max(0.0, self.player.overclock_timer - dt)
         hit_ids = self._resolve_pulses(delayed_pulses)
-        if attack:
+        hit_ids.update(self._advance_returning_spear(dt, previous_spear))
+        if self.auto_attack:
+            hit_ids.update(self._auto_attack())
+        elif attack:
             hit_ids.update(self._attack())
         self._collect_defeated()
         if self.choosing_card or self.choosing_weapon or self.victory:

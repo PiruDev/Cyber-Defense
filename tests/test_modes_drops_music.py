@@ -36,7 +36,7 @@ class ModesDropsTests(unittest.TestCase):
         config = BalanceConfig()
         self.assertEqual((config.drop_chance, config.repair_share), (0.2, 0.5))
         self.assertEqual((config.overclock_multiplier, config.overclock_duration), (1.25, 5))
-        self.assertEqual(set(WEAPON_CONFIGS), {"sword", "katana", "bow", "spear"})
+        self.assertEqual(set(WEAPON_CONFIGS), {"sword", "katana", "bow", "spear", "longbow", "returning_spear"})
         self.assertEqual(WEAPON_CONFIGS["katana"].impact_times, (0, 0.1))
         self.assertEqual(WEAPON_CONFIGS["spear"].impact_times, (0.08,))
         self.assertEqual(WEAPON_CONFIGS["bow"].projectile_speed, 400)

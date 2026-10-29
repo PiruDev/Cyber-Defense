@@ -15,7 +15,7 @@ from game.world import GameWorld
 
 class Mission007WorldTests(unittest.TestCase):
     def mundo(self, mode="defense"):
-        world = GameWorld(rng=random.Random(7), mode=mode)
+        world = GameWorld(rng=random.Random(7), mode=mode, auto_attack=False)
         world.enemies.clear()
         world.drops.clear()
         world.player.x, world.player.y = 500, 400

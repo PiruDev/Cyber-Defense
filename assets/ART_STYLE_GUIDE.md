@@ -1,5 +1,14 @@
 # Cyber Defense — direção de arte
 
+## Armas evoluídas — Missão 012
+
+Arco Longo (`assets/sprites/weapons/longbow.png`, 54×54, pivô 27,27) e Lança de
+Retorno (`returning_spear.png`, 112×22, pivô 56,11) foram produzidos em pixel art
+original pelo `pixel_artist`, base leste, RGBA com alfa binário e até doze cores.
+A integração usa nearest-neighbor e animação procedural, com energia ciano/roxa.
+As quatro armas anteriores reutilizam seus sprites procedurais existentes.
+Script, manifesto, autoria e prévia: `assets/references/mission012/`.
+
 ## Atualização de produção — Missão 011
 
 Esta atualização prevalece sobre as propostas futuras abaixo. O piloto existente

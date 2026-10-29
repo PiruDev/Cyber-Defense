@@ -4,6 +4,8 @@ import math
 from functools import lru_cache
 
 from .feel_config import CARD_ENTRY_OFFSET, ease_out_cubic
+from .weapon_cards import WeaponCard, EVOLVED, WEAPON_REPLACEMENT_WARNING
+from .weapon_render import weapon_sprite
 
 
 @lru_cache(maxsize=2)
@@ -90,7 +92,8 @@ def render_cards(surface, world, fonts):
         panel.fill((0, 0, 0, 0))
         x, y, width, height = 8, 8, rect[2], rect[3]
         active = index == active_index
-        color = gold if active else mint
+        is_weapon = isinstance(card, WeaponCard)
+        color = gold if active else (190, 132, 240) if is_weapon else mint
         body = (x, y, width, height)
         if active:
             pulse = 0.85 + 0.15 * math.sin(world.level_up.cards_elapsed * 4)
@@ -100,12 +103,23 @@ def render_cards(surface, world, fonts):
         pygame.draw.rect(panel, (27, 43, 54) if active else (22, 33, 46), body, border_radius=15)
         pygame.draw.rect(panel, color if active else (62, 86, 95), body, 2, border_radius=15)
         pygame.draw.circle(panel, (34, 57, 63), (x + 54, y + 57), 36)
-        _icon(pygame, panel, card.id, (x + 54, y + 57), color)
+        if is_weapon:
+            image = weapon_sprite(card.weapon_id)
+            scale = min(64 / image.get_width(), 64 / image.get_height())
+            image = pygame.transform.scale(image, (round(image.get_width() * scale), round(image.get_height() * scale)))
+            panel.blit(image, image.get_rect(center=(x + 54, y + 57)))
+            rarity = "ARMA EVOLUÍDA" if card.weapon_id in EVOLVED else "TROCA DE ARMA"
+            panel.blit(fonts["small"].render(rarity, True, (190, 132, 240)), (x + 103, y + 74))
+        else:
+            _icon(pygame, panel, card.id, (x + 54, y + 57), color)
         panel.blit(fonts["body"].render(f"[ {index + 1} ]", True, color), (x + 228, y + 39))
         panel.blit(fonts["body"].render(card.name, True, ink), (x + 23, y + 113))
-        _wrapped(panel, fonts["small"], card.description, x + 23, y + 160, muted)
+        _wrapped(panel, fonts["small"], card.description, x + 23, y + (145 if is_weapon else 160), muted)
         stacks = world.player.upgrades.get(card.id, 0)
-        panel.blit(fonts["small"].render(f"Melhoria {stacks + 1} / {card.max_stacks}", True, color), (x + 23, y + 250))
+        if is_weapon:
+            _wrapped(panel, fonts["small"], WEAPON_REPLACEMENT_WARNING, x + 23, y + 229, (255, 163, 180))
+        else:
+            panel.blit(fonts["small"].render(f"Melhoria {stacks + 1} / {card.max_stacks}", True, color), (x + 23, y + 250))
         pygame.draw.line(panel, (50, 74, 84), (x + 23, y + 282), (x + 277, y + 282))
         if progress < 1:
             pygame.draw.line(panel, color, (x + 23, y + 282), (x + 23 + 254 * progress, y + 282), 2)

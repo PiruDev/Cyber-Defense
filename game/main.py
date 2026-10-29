@@ -128,8 +128,8 @@ def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
                             choose = mundo.choose_card if mundo.choosing_card else mundo.choose_weapon
                             selected = choose(index)
                     elif (mundo.phase == "practice" and mundo.mode == GameMode.LABORATORY
-                          and evento.key in (pygame.K_1, pygame.K_2, pygame.K_3)):
-                        selected = mundo.switch_weapon({pygame.K_1: 0, pygame.K_2: 1, pygame.K_3: 2}[evento.key])
+                          and evento.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6)):
+                        selected = mundo.switch_weapon(evento.key - pygame.K_1)
                     elif evento.key == pygame.K_i:
                         mundo.toggle_inventory()
                     elif evento.key == pygame.K_h:
@@ -166,7 +166,7 @@ def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
             # O tempo deste quadro pertence à escolha, mesmo após a confirmação.
             if (not choosing_at_start and not selected and simulation_dt > 0
                     and not menu_active and not mundo.game_over and not mundo.victory):
-                mundo.update(simulation_dt, dx, dy, attack=bool(teclas[pygame.K_SPACE]))
+                mundo.update(simulation_dt, dx, dy)
             audio.play_events(mundo.effects.consume_events())
             music.updatevolume()
             if menu_active:

@@ -23,7 +23,16 @@ WEAPON_CONFIGS = {
     "katana": WeaponConfig("katana", "Katana", .6, .40, 70, 0, 100, (0, .10), .24),
     "bow": WeaponConfig("bow", "Arco", 1.4, .50, 500, 0, 0, (0,), .18, 400),
     "spear": WeaponConfig("spear", "Lança", 1.2, .42, 105, 14, 0, (.08,), .22),
+    "longbow": WeaponConfig("longbow", "Arco Longo", 1.4, .50, 500, 0, 0, (0,), .18, 400),
+    "returning_spear": WeaponConfig("returning_spear", "Lança de Retorno", 1.2, .42, 240, 14, 0, (0,), .22, 400),
 }
+
+SPEAR_RECALL_SECONDS = 3.0
+SPEAR_SPIN_DURATION = .30
+SPEAR_RETURN_DURATION = .18
+SPEAR_SPIN_REACH = 105
+SPEAR_PICKUP_RADIUS = 18
+LONGBOW_MAX_HITS = 3
 
 
 @dataclass(frozen=True)
@@ -46,9 +55,11 @@ class BalanceConfig:
     training_target_hp: float = 6
     training_targets: int = 3
     max_player_projectiles: int = 40
+    weapon_card_chance: float = .08
+    evolved_weapon_weight: float = .25
 
     def __post_init__(self):
-        for name in ("drop_chance", "repair_share"):
+        for name in ("drop_chance", "repair_share", "weapon_card_chance", "evolved_weapon_weight"):
             value = getattr(self, name)
             if not isfinite(value) or not 0 <= value <= 1:
                 raise ValueError(f"{name} deve estar entre zero e um.")

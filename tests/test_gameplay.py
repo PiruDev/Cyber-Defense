@@ -11,7 +11,8 @@ from game.world import GameWorld
 
 class ArenaTests(unittest.TestCase):
     def mundo(self):
-        mundo = GameWorld(arena=(32, 154, 1036, 530), rng=random.Random(42))
+        # Contato/cone são isolados do novo controlador de ataque automático.
+        mundo = GameWorld(arena=(32, 154, 1036, 530), rng=random.Random(42), auto_attack=False)
         mundo.enemies.clear()
         mundo.drops.clear()
         mundo.player.x, mundo.player.y = 500, 400

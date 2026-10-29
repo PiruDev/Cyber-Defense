@@ -12,7 +12,8 @@ from game.worm import Worm
 
 class JuiceTests(unittest.TestCase):
     def mundo(self):
-        world = GameWorld(rng=random.Random(9))
+        # Acertos e erros são disparados explicitamente para medir feedback.
+        world = GameWorld(rng=random.Random(9), auto_attack=False)
         world.enemies.clear()
         world.drops.clear()
         world.player.x, world.player.y = 500, 400

@@ -233,7 +233,8 @@ pygame.init()
 try:
     pygame.display.set_mode((1100,770))
     layer=pygame.Surface((2400,1600),pygame.SRCALPHA)
-    world=GameWorld()
+    # Este caso mede a janela visual mesmo para um golpe manual no vazio.
+    world=GameWorld(auto_attack=False)
     world.enemies.clear()
     world.player.facing_x,world.player.facing_y=1,0
     with patch.object(weapon_render,"render_slash",wraps=weapon_render.render_slash) as slash:

@@ -285,6 +285,11 @@ def render_projectile(surface, projectile):
     pygame.draw.circle(surface, (53, 68, 64), (round(x), round(y)), 7)
     tail = (x - math.cos(angle) * 14, y - math.sin(angle) * 14)
     color = (73, 233, 245) if getattr(projectile, "team", "enemy") == "player" else (243, 202, 117)
+    if getattr(projectile, "kind", "arrow") == "piercing_arrow":
+        color = (172, 114, 219)
+        pygame.draw.line(surface, (42, 67, 92),
+                         (x - math.cos(angle) * 27, y - math.sin(angle) * 27), (x, y), 5)
+        pygame.draw.circle(surface, (73, 233, 245), (round(x), round(y)), 5, 1)
     pygame.draw.line(surface, color, tail, (x, y), 3)
     pygame.draw.polygon(surface, (231, 237, 235), [(x + math.cos(angle) * 5, y + math.sin(angle) * 5),
         (x + math.cos(angle + 2.4) * 6, y + math.sin(angle + 2.4) * 6),

@@ -2,15 +2,20 @@
 
 import math
 from functools import lru_cache
+from pathlib import Path
 
 from .sprites import sword_angle, sword_sprite
 from .slash_render import render_slash
+from .balance import SPEAR_RETURN_DURATION, SPEAR_SPIN_DURATION, SPEAR_SPIN_REACH
 
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=6)
 def weapon_sprite(weapon_id):
     import pygame
 
+    if weapon_id in ("longbow", "returning_spear"):
+        return pygame.image.load(str(Path(__file__).resolve().parents[1]
+                                     / "assets/sprites/weapons" / (weapon_id + ".png")))
     if weapon_id in ("sword", "katana"):
         image = sword_sprite().copy()
         if weapon_id == "katana":
@@ -69,7 +74,7 @@ def _bow(surface, world, *_):
     import pygame
 
     angle = math.atan2(world.attack_facing_y, world.attack_facing_x)
-    image = pygame.transform.rotate(weapon_sprite("bow"), -math.degrees(angle))
+    image = pygame.transform.rotate(weapon_sprite(world.weapon_id), -math.degrees(angle))
     surface.blit(image, image.get_rect(center=(world.player.x + math.cos(angle) * 24,
                                                world.player.y + math.sin(angle) * 24)))
 
@@ -89,9 +94,68 @@ def _spear(surface, world, *_):
                                                world.player.y + math.sin(angle) * length / 2)))
 
 
-_RENDERERS = {"sword": _slash, "katana": _slash, "bow": _bow, "spear": _spear}
+_RENDERERS = {"sword": _slash, "katana": _slash, "bow": _bow, "longbow": _bow, "spear": _spear}
+
+
+def _rest(surface, world):
+    import pygame
+
+    player = world.player
+    angle = math.atan2(player.facing_y, player.facing_x)
+    image = weapon_sprite(world.weapon_id)
+    image = pygame.transform.scale(image, (round(image.get_width() * .65), round(image.get_height() * .65)))
+    image = pygame.transform.rotate(image, -math.degrees(angle - .55))
+    center = (player.x - math.sin(angle) * 24 + math.cos(angle) * 7,
+              player.y + math.cos(angle) * 24 + math.sin(angle) * 7)
+    surface.blit(image, image.get_rect(center=center))
+
+
+def render_thrown_spear(surface, world):
+    import pygame
+
+    weapons = world.weapons
+    spear = weapons.returning_spear
+    if spear is not None:
+        x, y = spear.x, spear.y
+        angle = math.atan2(spear.projectile.vy, spear.projectile.vx)
+        if spear.landed:
+            pygame.draw.circle(surface, (62, 48, 91), (round(x), round(y)), 24, 1)
+            pygame.draw.circle(surface, (116, 185, 202), (round(x), round(y)), 29, 1)
+    elif weapons.return_timer > 0 and weapons.return_origin is not None:
+        progress = 1 - weapons.return_timer / SPEAR_RETURN_DURATION
+        origin = weapons.return_origin
+        x = origin[0] + (world.player.x - origin[0]) * progress
+        y = origin[1] + (world.player.y - origin[1]) * progress
+        angle = math.atan2(world.player.y - origin[1], world.player.x - origin[0])
+    else:
+        return
+    image = pygame.transform.scale(weapon_sprite("returning_spear"), (76, 15))
+    image = pygame.transform.rotate(image, -math.degrees(angle))
+    surface.blit(image, image.get_rect(center=(x, y)))
+
+
+def _spin(surface, world):
+    import pygame
+
+    progress = 1 - world.weapons.spin_timer / SPEAR_SPIN_DURATION
+    angle = progress * math.tau
+    reach = SPEAR_SPIN_REACH * world.player.attack_range / 70
+    render_slash(surface, (world.player.x, world.player.y), angle, .5, reach, half_angle=90,
+                 reduced=world.effects.settings.particle_scale < 1)
+    image = pygame.transform.rotate(weapon_sprite("returning_spear"), -math.degrees(angle))
+    center = (world.player.x + math.cos(angle) * 44, world.player.y + math.sin(angle) * 44)
+    surface.blit(image, image.get_rect(center=center))
 
 
 def render_weapon(surface, world, *, image_factory=sword_sprite, angle_function=sword_angle):
+    if world.weapons.spin_timer > 0:
+        _spin(surface, world)
+        return
+    if world.weapons.returning_spear is not None or world.weapons.return_timer > 0:
+        return
     if world.attack_timer > 0:
-        _RENDERERS[world.weapon_id](surface, world, image_factory, angle_function)
+        renderer = _RENDERERS.get(world.weapon_id)
+        if renderer is not None:
+            renderer(surface, world, image_factory, angle_function)
+    else:
+        _rest(surface, world)

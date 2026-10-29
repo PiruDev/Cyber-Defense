@@ -54,7 +54,8 @@ try:
     assert sword.get_at((60, 12)).a > 0
 
     def world():
-        state = GameWorld(rng=random.Random(17))
+        # Render de golpes manuais, incluindo animação no vazio.
+        state = GameWorld(rng=random.Random(17), auto_attack=False)
         state.enemies = [Enemy(state.player.x + 45, state.player.y, speed=0)]
         state.drops = [Drop(state.player.x - 90, state.player.y + 60)]
         state.player.facing_x, state.player.facing_y = 1, 0

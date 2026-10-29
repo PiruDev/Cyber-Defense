@@ -51,7 +51,7 @@ def render_menu(surface, fonts, selected=0, music_status="", clock=0):
     _text(surface, fonts["body"], "Defenda o núcleo do sistema operacional. Recupere dados e instale atualizações.", (70, 259), MUTED)
     _text(surface, fonts["small"], "SELECIONE UM PROTOCOLO", (70, 333), CYAN)
     descriptions = (("[1]  MODO DEFESA", "6 hordas · ROOTKIT · arma desbloqueada", "Conclua um teste breve e encerre a operação."),
-                    ("[2]  MODO LABORATÓRIO", "5 hordas · sem ROOTKIT · três armas", "Alterne equipamentos em um treino de 45 s."))
+                    ("[2]  MODO LABORATÓRIO", "5 hordas · sem ROOTKIT · seis armas", "Alterne equipamentos em um treino de 45 s."))
     for index, (rect, labels) in enumerate(zip(menu_rects(), descriptions)):
         active = index == selected
         x, y, width, height = rect
@@ -61,7 +61,7 @@ def render_menu(surface, fonts, selected=0, music_status="", clock=0):
         _text(surface, fonts["small"], labels[1], (x + 23, y + 84), INK)
         _text(surface, fonts["small"], labels[2], (x + 23, y + 120), MUTED)
     _text(surface, fonts["body"], "1 / 2, clique ou use setas e Enter para iniciar", (70, 590))
-    _text(surface, fonts["small"], "WASD/SETAS mover  ·  ESPAÇO atacar  ·  H reparar  ·  I inventário  ·  F2/F3 efeitos", (70, 637), MUTED)
+    _text(surface, fonts["small"], "WASD/SETAS mover  ·  ATAQUE AUTOMÁTICO  ·  H reparar  ·  I inventário  ·  F2/F3 efeitos", (70, 637), MUTED)
     _text(surface, fonts["small"], music_status, (70, 702), MUTED)
     _text(surface, fonts["small"], "Sua faixa: assets/audio/theme.ogg ou theme.mp3     |     ESC sair", (70, 733), MUTED)
 
@@ -90,6 +90,6 @@ def render_weapon_choice(surface, world, fonts):
         from .card_ui import _wrapped
         _wrapped(surface, fonts["small"], descriptions[index], x + 22, y + 195, MUTED)
         _text(surface, fonts["small"], f"Intervalo-base {WEAPON_CONFIGS[weapon_id].cooldown:g} s", (x + 22, y + 270), MUTED)
-    rule = "Escolha uma arma para o teste final de 15 segundos." if world.mode.value == "defense" else "No treino: 1 Katana · 2 Arco · 3 Lança. Até 45 segundos, sem XP ou drops."
+    rule = "Escolha uma arma para o teste final de 15 segundos." if world.mode.value == "defense" else "Treino: 1 Katana · 2 Arco · 3 Lança · 4 Arco Longo · 5 Retorno · 6 Espada. Até 45 s."
     _text(surface, fonts["body"], "Clique ou pressione 1, 2 ou 3", (70, 620))
     _text(surface, fonts["small"], rule, (70, 663), MUTED)

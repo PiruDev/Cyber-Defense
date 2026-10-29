@@ -6,7 +6,7 @@ from .sprites import potion_sprite, sword_angle, sword_sprite
 from .enemy_render import render_enemy, render_enemy_ghosts, render_projectile
 from .card_ui import render_cards
 from .effect_render import render_effects
-from .weapon_render import render_weapon
+from .weapon_render import render_weapon, render_thrown_spear
 from .cyber_ui import render_weapon_choice
 from .levelup_render import render_levelup_intro, render_levelup_wave
 from .player_render import render_player
@@ -90,7 +90,7 @@ def render_world(surface, world, fonts):
     surface.set_clip(previous_clip)
     pygame.draw.rect(surface, (26, 79, 99), viewport.inflate(4, 4), 2, border_radius=5)
 
-    text(surface, fonts["small"], "WASD/SETAS mover   ESPAÇO atacar   H reparar   I inventário   F2/F3 efeitos   M menu   ESC sair", (32, 707), MUTED)
+    text(surface, fonts["small"], "WASD/SETAS mover   ATAQUE AUTOMÁTICO   H reparar   I inventário   F2/F3 efeitos   M menu   ESC sair", (32, 707), MUTED)
     boss = next((enemy for enemy in world.enemies if getattr(enemy, "kind", "basic") in ("rootkit", "worm")), None)
     if boss:
         text(surface, fonts["small"], "ROOTKIT // BOSS" if boss.kind == "rootkit" else "MALWARE // SEMIBOSS", (32, 735), CORAL if boss.kind == "rootkit" else GOLD)
@@ -98,7 +98,7 @@ def render_world(surface, world, fonts):
         detail = "Resiste a interrupções" if boss.kind == "rootkit" else f"{len(boss.segments)} segmentos"
         text(surface, fonts["small"], f"{boss.hp:g}/{boss.max_hp:g}  |  {detail}", (788, 735), GOLD)
     elif world.phase == "practice":
-        rule = "1 Katana · 2 Arco · 3 Lança" if world.mode.value == "laboratory" else "Equipamento selecionado"
+        rule = "1 Kat · 2 Arco · 3 Lan · 4 Longo · 5 Retorno · 6 Esp" if world.mode.value == "laboratory" else "Equipamento selecionado"
         text(surface, fonts["small"], f"TREINO {world.practice_remaining:.1f}s  /  {world.weapons.config.name}  /  {rule}", (32, 735), MINT)
     elif world.waves.preparation_timer > 0:
         text(surface, fonts["body"], f"Prepare-se! Horda {world.waves.number + 1} em {world.waves.preparation_timer:.1f} s", (32, 735), GOLD)
@@ -129,6 +129,7 @@ def _draw_arena(surface, world):
                      motion_direction=motion[1:] if motion else None)
     for projectile in world.projectiles:
         render_projectile(surface, projectile)
+    render_thrown_spear(surface, world)
 
     render_player(surface, world)
     render_weapon(surface, world, image_factory=sword_sprite, angle_function=sword_angle)

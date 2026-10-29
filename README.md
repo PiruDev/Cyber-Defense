@@ -34,12 +34,12 @@ nearest-neighbor; as hitboxes e os atributos das armas permanecem inalterados.
 | Tecla | Ação |
 |---|---|
 | WASD ou setas | Mover e orientar o personagem |
-| Espaço (pode segurar) | Usar a arma equipada na direção do personagem |
+| Ataque automático | A arma mira o inimigo vivo mais próximo no alcance; Espaço não é necessário |
 | H | Aplicar pacote de reparo: recupera 35 HP, sem gastar com HP cheio |
 | I | Abrir/fechar inventário e pausar a arena; H continua disponível |
 | 1, 2, 3 ou clique na carta | Selecionar melhoria ao subir de nível |
 | 1, 2, 3 na seleção de armas | Escolher Katana, Arco ou Lança |
-| 1, 2, 3 no treino do Laboratório | Alternar entre as três armas |
+| 1–6 no treino do Laboratório | Katana, Arco, Lança, Arco Longo, Lança de Retorno, Espada |
 | Setas / A-D e Enter nas cartas | Destacar e confirmar uma melhoria |
 | F2 | Alternar shake: normal, reduzido, desligado |
 | F3 | Alternar partículas: normal, reduzido, desligado |
@@ -50,8 +50,9 @@ nearest-neighbor; as hitboxes e os atributos das armas permanecem inalterados.
 O menu apresenta dois modos. **Defesa:** complete as hordas 1–5, enfrente ROOTKIT
 na sexta, escolha uma arma e teste por até 15 segundos ou três alvos. **Laboratório:**
 complete as hordas 1–5, sem ROOTKIT, e escolha uma arma para abrir um treino de até
-45 segundos. Nele, 1/2/3 alternam equipamentos; há três alvos por arma, nove ao todo,
-sem reposição ao revisitar um equipamento. Eliminar os nove também encerra o treino.
+45 segundos. Nele, 1–6 alternam equipamentos; há nove alvos em três grupos,
+sem reposição. Arco Longo compartilha os alvos do Arco, Lança de Retorno os da
+Lança, e Espada os da Katana. Eliminar os nove também encerra o treino.
 Ambos os modos terminam em um resultado; não há spawn infinito no laboratório.
 O treino não concede XP, drops ou abates de campanha. Reinício remove os upgrades.
 
@@ -135,15 +136,40 @@ o XP adicional permanece acumulado. São 51 inimigos nas cinco primeiras hordas 
 
 ## Armas desbloqueadas
 
+O jogador controla o movimento. O sistema escolhe o inimigo vivo mais próximo
+no alcance específico da arma e captura sua direção no início de cada ciclo.
+Sem alvo, a arma permanece equipada em repouso. Pausas, hitstop e cooldowns
+continuam valendo. Espada, katana e lança ficam visíveis ao lado do jogador.
+
 | Arma | Impacto relativo ao atributo de dano | Intervalo-base | Alcance-base |
 |---|---|---|---|
 | Katana | Dois cortes de 0,6×, em 0 e 0,10 s | 0,40 s | 70 px, cone de 100° |
 | Arco | Uma flecha de 1,4×, velocidade de 400 px/s | 0,50 s | 500 px |
 | Lança | Uma estocada de 1,2×, impacto em 0,08 s | 0,42 s | 105 px, largura de 14 px |
+| Arco Longo | Flecha de 1,4× perfura até três inimigos distintos | 0,50 s | 500 px, velocidade 400 px/s |
+| Lança de Retorno | Arremesso de 1,2×; recuperação manual causa giro de 1,2× | 0,42 s após recuperar | Arremesso 240 px; giro 105 px |
 
 A Defesa permite escolher uma única arma após o chefe. O Laboratório permite trocar
 durante o treino. Trocar cancela golpes pendentes e preserva o cooldown. Cada impacto
-atinge uma vez por alvo; flechas param no primeiro alvo e não atingem SENTINEL-01.
+atinge uma vez por alvo; flechas comuns param no primeiro alvo e não atingem SENTINEL-01.
+Flechas do Arco Longo registram até três inimigos distintos; os segmentos de uma
+mesma minhoca contam como uma criatura, sem perder várias cabeças pela mesma flecha.
+
+A Lança de Retorno para no primeiro impacto, na parede ou no limite do arremesso.
+Enquanto estiver no mundo, não é possível arremessar outra. Encostar nela parada
+antes de três segundos recupera a arma e aplica um giro de 360 graus uma única
+vez por inimigo. Aos três segundos ativos desde o lançamento ela retorna
+automaticamente, com animação e sem giro. Inventário, cartas e demais pausas não
+consomem esse tempo. Recuperar inicia novamente o cooldown; trocar de arma limpa
+a lança, giros, golpes pendentes e projéteis do jogador, preservando seus upgrades.
+
+Cada seleção de level up possui chance configurável de **8%** de incluir uma carta
+de arma no lugar de uma das três cartas. As escolhas continuam distintas. O aviso
+**ATENÇÃO: VOCÊ PERDERÁ SUA ARMA ATUAL.** aparece na carta, junto do sprite e tipo.
+O peso de cada evolução é 0,25 contra 1 de cada arma comum elegível. A arma atual
+não aparece; Arco comum não é oferecido para quem usa Arco Longo, nem Lança comum
+para quem usa Lança de Retorno. Trocas entre famílias continuam voluntárias.
+Chance e peso ficam em `BalanceConfig`, em `game/balance.py`.
 
 ## Inimigos
 
@@ -226,7 +252,8 @@ sem salto. Aproxime um grupo de uma parede para observar a separação suave; st
 e knockback devem continuar funcionando. Teste os dois resultados de coleta com cinco
 poções (cura ou pontos), avance hordas, encontre a minhoca na quinta, deixe o HP
 zerar e reinicie com R. Na Defesa, enfrente ROOTKIT na sexta e escolha uma arma.
-No Laboratório, teste 1/2/3 após a quinta; confira golpes, flechas e estocada.
+No Laboratório, teste 1–6 após a quinta; confira golpes automáticos, perfuração,
+estocada, arremesso, recuperação manual com giro e retorno automático sem giro.
 Após o treino, R reinicia no mesmo modo; M volta ao menu.
 
 ## Organização

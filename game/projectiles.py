@@ -15,6 +15,9 @@ class Projectile:
     ttl: float = 4
     team: str = "enemy"
     range_remaining: float | None = None
+    max_hits: int = 1
+    hit_ids: set = field(default_factory=set)
+    kind: str = "arrow"
     previous_x: float = field(init=False)
     previous_y: float = field(init=False)
 
