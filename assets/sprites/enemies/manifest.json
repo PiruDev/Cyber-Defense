@@ -1,0 +1,585 @@
+{
+  "version": 1,
+  "types": {
+    "basic": {
+      "frame_size": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        24
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#1E1328",
+        "#3D1B35",
+        "#651C3B",
+        "#9F3155",
+        "#CA315B",
+        "#F35691",
+        "#FF7884",
+        "#FFB699",
+        "#FFDBB2",
+        "#E2F7FF",
+        "#4C4158"
+      ],
+      "states": {
+        "idle": {
+          "file": "virus_basic/idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "virus_basic/move.png",
+          "frames": 6,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "virus_basic/hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "death": {
+          "file": "virus_basic/death.png",
+          "frames": 5,
+          "durations_ms": [
+            60,
+            60,
+            60,
+            60,
+            60
+          ],
+          "loop": false
+        }
+      }
+    },
+    "archer": {
+      "frame_size": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        24
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#23162B",
+        "#3F1936",
+        "#691C42",
+        "#9D2B58",
+        "#CC3B6F",
+        "#F05C85",
+        "#9E5C2F",
+        "#D38E40",
+        "#F3CA75",
+        "#FFE6A6",
+        "#E2F7FF"
+      ],
+      "states": {
+        "idle": {
+          "file": "archer/idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "archer/move.png",
+          "frames": 6,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "archer/hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "death": {
+          "file": "archer/death.png",
+          "frames": 5,
+          "durations_ms": [
+            60,
+            60,
+            60,
+            60,
+            60
+          ],
+          "loop": false
+        },
+        "windup": {
+          "file": "archer/windup.png",
+          "frames": 3,
+          "durations_ms": [
+            150,
+            150,
+            150
+          ],
+          "loop": false
+        },
+        "attack": {
+          "file": "archer/attack.png",
+          "frames": 3,
+          "durations_ms": [
+            47,
+            47,
+            46
+          ],
+          "loop": false
+        }
+      }
+    },
+    "rootkit": {
+      "frame_size": [
+        96,
+        96
+      ],
+      "pivot": [
+        48,
+        48
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#1D132E",
+        "#34234F",
+        "#4C2B6E",
+        "#7045A6",
+        "#9B55CA",
+        "#C44ED1",
+        "#EC67DD",
+        "#FF99F0",
+        "#E2F7FF",
+        "#A2743F",
+        "#F3CA75"
+      ],
+      "states": {
+        "idle": {
+          "file": "rootkit_boss/idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "rootkit_boss/move.png",
+          "frames": 6,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "rootkit_boss/hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "death": {
+          "file": "rootkit_boss/death.png",
+          "frames": 6,
+          "durations_ms": [
+            75,
+            75,
+            75,
+            75,
+            75,
+            75
+          ],
+          "loop": false
+        },
+        "windup": {
+          "file": "rootkit_boss/windup.png",
+          "frames": 3,
+          "durations_ms": [
+            217,
+            217,
+            216
+          ],
+          "loop": false
+        },
+        "attack": {
+          "file": "rootkit_boss/attack.png",
+          "frames": 4,
+          "durations_ms": [
+            50,
+            50,
+            50,
+            50
+          ],
+          "loop": false
+        }
+      }
+    },
+    "worm_head": {
+      "frame_size": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        32
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#251D19",
+        "#403019",
+        "#5F431B",
+        "#835C21",
+        "#A77A2B",
+        "#CD9B3B",
+        "#F3CA75",
+        "#FFE090",
+        "#FFF4CD",
+        "#E2F7FF",
+        "#4B4134"
+      ],
+      "states": {
+        "idle": {
+          "file": "segmented_worm/head_idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "segmented_worm/head_move.png",
+          "frames": 4,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "segmented_worm/head_hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "rupture": {
+          "file": "segmented_worm/head_rupture.png",
+          "frames": 4,
+          "durations_ms": [
+            75,
+            75,
+            75,
+            75
+          ],
+          "loop": false
+        },
+        "new_head": {
+          "file": "segmented_worm/head_new_head.png",
+          "frames": 3,
+          "durations_ms": [
+            50,
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "death": {
+          "file": "segmented_worm/head_death.png",
+          "frames": 6,
+          "durations_ms": [
+            75,
+            75,
+            75,
+            75,
+            75,
+            75
+          ],
+          "loop": false
+        }
+      }
+    },
+    "worm_body": {
+      "frame_size": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        32
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#251D19",
+        "#403019",
+        "#5F431B",
+        "#835C21",
+        "#A77A2B",
+        "#CD9B3B",
+        "#F3CA75",
+        "#FFE090",
+        "#FFF4CD",
+        "#E2F7FF",
+        "#4B4134"
+      ],
+      "states": {
+        "idle": {
+          "file": "segmented_worm/body_idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "segmented_worm/body_move.png",
+          "frames": 4,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "segmented_worm/body_hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "rupture": {
+          "file": "segmented_worm/body_rupture.png",
+          "frames": 4,
+          "durations_ms": [
+            75,
+            75,
+            75,
+            75
+          ],
+          "loop": false
+        }
+      }
+    },
+    "worm_tail": {
+      "frame_size": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        32
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#251D19",
+        "#403019",
+        "#5F431B",
+        "#835C21",
+        "#A77A2B",
+        "#CD9B3B",
+        "#F3CA75",
+        "#FFE090",
+        "#FFF4CD",
+        "#E2F7FF",
+        "#4B4134"
+      ],
+      "states": {
+        "idle": {
+          "file": "segmented_worm/tail_idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "segmented_worm/tail_move.png",
+          "frames": 4,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "segmented_worm/tail_hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "rupture": {
+          "file": "segmented_worm/tail_rupture.png",
+          "frames": 4,
+          "durations_ms": [
+            75,
+            75,
+            75,
+            75
+          ],
+          "loop": false
+        }
+      }
+    },
+    "swordsman": {
+      "frame_size": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        32
+      ],
+      "facing": "east",
+      "palette": [
+        "#07101F",
+        "#1C1A2B",
+        "#30273C",
+        "#50253D",
+        "#7B2B46",
+        "#AE334C",
+        "#E53D53",
+        "#FF5B64",
+        "#FF9F91",
+        "#E2F7FF",
+        "#7D3B8C",
+        "#C24FB4"
+      ],
+      "states": {
+        "idle": {
+          "file": "swordsman/idle.png",
+          "frames": 4,
+          "durations_ms": [
+            150,
+            150,
+            150,
+            150
+          ],
+          "loop": true
+        },
+        "move": {
+          "file": "swordsman/move.png",
+          "frames": 6,
+          "durations_ms": [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100
+          ],
+          "loop": true
+        },
+        "hurt": {
+          "file": "swordsman/hurt.png",
+          "frames": 2,
+          "durations_ms": [
+            50,
+            50
+          ],
+          "loop": false
+        },
+        "death": {
+          "file": "swordsman/death.png",
+          "frames": 5,
+          "durations_ms": [
+            60,
+            60,
+            60,
+            60,
+            60
+          ],
+          "loop": false
+        },
+        "windup": {
+          "file": "swordsman/windup.png",
+          "frames": 3,
+          "durations_ms": [
+            117,
+            117,
+            116
+          ],
+          "loop": false
+        },
+        "attack": {
+          "file": "swordsman/attack.png",
+          "frames": 3,
+          "durations_ms": [
+            47,
+            47,
+            46
+          ],
+          "loop": false
+        }
+      }
+    }
+  }
+}

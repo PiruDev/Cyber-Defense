@@ -1,0 +1,78 @@
+[1mdiff --git a/game/main.py b/game/main.py[m
+[1mindex c391b7e..8e59c36 100644[m
+[1m--- a/game/main.py[m
+[1m+++ b/game/main.py[m
+[36m@@ -1,23 +1,49 @@[m
+[31m-[m
+[31m-import pygame[m
+[31m-[m
+[31m-pygame.init()[m
+[31m-[m
+[31m-tela = pygame.display.set_mode((800, 600))[m
+[31m-pygame.display.set_caption("AgentOS - Teste inicial")[m
+[31m-[m
+[31m-relogio = pygame.time.Clock()[m
+[31m-executando = True[m
+[31m-[m
+[31m-while executando:[m
+[31m-    for evento in pygame.event.get():[m
+[31m-        if evento.type == pygame.QUIT:[m
+[31m-            executando = False[m
+[31m-[m
+[31m-    tela.fill((35, 40, 55))[m
+[31m-    pygame.draw.rect(tela, (50, 160, 255), (370, 270, 60, 60))[m
+[31m-[m
+[31m-    pygame.display.flip()[m
+[31m-    relogio.tick(60)[m
+[31m-[m
+[31m-pygame.quit()[m
+\ No newline at end of file[m
+[32m+[m[32m"""Janela inicial do AgentOS e apresentação da progressão do jogador."""[m
+[32m+[m
+[32m+[m[32mif __package__:[m
+[32m+[m[32m    from .progression import Progressao[m
+[32m+[m[32melse:[m
+[32m+[m[32m    from progression import Progressao[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef desenhar_hud(tela, fonte, progressao: Progressao) -> None:[m
+[32m+[m[32m    """Desenha os atributos atuais sem alterar as regras de progressão."""[m
+[32m+[m[32m    linhas = ([m
+[32m+[m[32m        f"Nível: {progressao.nivel}",[m
+[32m+[m[32m        f"XP: {progressao.xp}/{progressao.xp_necessario}",[m
+[32m+[m[32m        f"HP: {progressao.hp}/{progressao.hp_maximo}",[m
+[32m+[m[32m        f"Dano: {progressao.dano}",[m
+[32m+[m[32m    )[m
+[32m+[m[32m    for indice, texto in enumerate(linhas):[m
+[32m+[m[32m        imagem = fonte.render(texto, True, (240, 240, 245))[m
+[32m+[m[32m        tela.blit(imagem, (16, 16 + indice * 28))[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef main() -> None:[m
+[32m+[m[32m    import pygame[m
+[32m+[m
+[32m+[m[32m    try:[m
+[32m+[m[32m        pygame.init()[m
+[32m+[m[32m        tela = pygame.display.set_mode((800, 600))[m
+[32m+[m[32m        pygame.display.set_caption("AgentOS - Teste inicial")[m
+[32m+[m[32m        relogio = pygame.time.Clock()[m
+[32m+[m[32m        fonte = pygame.font.Font(None, 28)[m
+[32m+[m[32m        progressao = Progressao()[m
+[32m+[m[32m        executando = True[m
+[32m+[m
+[32m+[m[32m        while executando:[m
+[32m+[m[32m            for evento in pygame.event.get():[m
+[32m+[m[32m                if evento.type == pygame.QUIT:[m
+[32m+[m[32m                    executando = False[m
+[32m+[m
+[32m+[m[32m            tela.fill((35, 40, 55))[m
+[32m+[m[32m            pygame.draw.rect(tela, (50, 160, 255), (370, 270, 60, 60))[m
+[32m+[m[32m            desenhar_hud(tela, fonte, progressao)[m
+[32m+[m[32m            pygame.display.flip()[m
+[32m+[m[32m            relogio.tick(60)[m
+[32m+[m[32m    finally:[m
+[32m+[m[32m        pygame.quit()[m
+[32m+[m
+[32m+[m
+[32m+[m[32mif __name__ == "__main__":[m
+[32m+[m[32m    main()[m

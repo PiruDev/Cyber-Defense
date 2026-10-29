@@ -1,0 +1,83 @@
+{
+  "source": "assets/sprites/player/sentinel_idle.png",
+  "source_sha256": "1b6ba716b67876fa32fedde73ab1a38352d08991a2e3acbe58473b13884dde35",
+  "players": [
+    {
+      "file": "assets/sprites/player/sentinel_idle_sheet.png",
+      "frame_size": [
+        48,
+        48
+      ],
+      "frames": 4,
+      "pivot": [
+        24,
+        24
+      ],
+      "facing": "south",
+      "directions": [
+        "south"
+      ],
+      "durations_ms": [
+        150,
+        150,
+        150,
+        150
+      ],
+      "loop": true
+    },
+    {
+      "file": "assets/sprites/player/sentinel_move_sheet.png",
+      "frame_size": [
+        48,
+        48
+      ],
+      "frames": 6,
+      "pivot": [
+        24,
+        24
+      ],
+      "facing": "south",
+      "directions": [
+        "south"
+      ],
+      "durations_ms": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "loop": true
+    }
+  ],
+  "tiles": [
+    {
+      "file": "assets/sprites/environment/digital_grid_tile.png",
+      "size": [
+        40,
+        40
+      ],
+      "frames": 1,
+      "world_anchored": true
+    },
+    {
+      "file": "assets/sprites/environment/digital_circuit_tile.png",
+      "size": [
+        40,
+        40
+      ],
+      "frames": 1,
+      "world_anchored": true
+    },
+    {
+      "file": "assets/sprites/environment/digital_panel_tile.png",
+      "size": [
+        40,
+        40
+      ],
+      "frames": 1,
+      "world_anchored": true
+    }
+  ]
+}
