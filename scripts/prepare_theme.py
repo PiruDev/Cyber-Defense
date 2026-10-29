@@ -27,7 +27,7 @@ def prepare(source: Path, output: Path):
             head = samples[frame * channels + channel]
             base.append(round(tail * (1 - alpha) + head * alpha))
     length = len(base) // channels
-    speed = .8
+    speed = 1
     output_samples = array("h")
     position = 0.0
     while position < length:
