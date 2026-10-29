@@ -2,7 +2,7 @@
 import os
 
 BUFFER_SIZES = (512, 1024, 2048)
-DEFAULT_BUFFER = 512  # Preserva o padrão; não afirma ser o melhor para todo browser.
+DEFAULT_BUFFER = 1024  # Preserva o padrão; não afirma ser o melhor para todo browser.
 
 
 def buffer_from_query(query):
