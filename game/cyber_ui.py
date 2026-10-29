@@ -63,7 +63,7 @@ def render_menu(surface, fonts, selected=0, music_status="", clock=0):
     _text(surface, fonts["body"], "1 / 2, clique ou use setas e Enter para iniciar", (70, 590))
     _text(surface, fonts["small"], "WASD/SETAS mover  ·  ATAQUE AUTOMÁTICO  ·  H reparar  ·  I inventário  ·  F2/F3 efeitos", (70, 637), MUTED)
     _text(surface, fonts["small"], music_status, (70, 702), MUTED)
-    _text(surface, fonts["small"], "Sua faixa: assets/audio/theme.ogg ou theme.mp3     |     ESC sair", (70, 733), MUTED)
+    _text(surface, fonts["small"], "Áudio autoral: Firewall_8bit · velocidade fixa 0,8×     |     ESC sair", (70, 733), MUTED)
 
 
 def render_weapon_choice(surface, world, fonts):

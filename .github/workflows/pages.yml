@@ -1,0 +1,49 @@
+name: Cyber Defense — build e Pages manual
+
+# Nenhum push ou pull request publica o jogo.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publicar no GitHub Pages depois de gerar o artefato?
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-web.txt
+      - run: python -m pip install -r requirements-web.txt
+      - run: python scripts/build_web.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cyber-defense-web-zip
+          path: dist/cyber-defense-web.zip
+      - uses: actions/upload-pages-artifact@v3
+        if: ${{ inputs.publish }}
+        with:
+          path: dist/web
+  deploy:
+    if: ${{ inputs.publish }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar versão solicitada
+        id: deployment
+        uses: actions/deploy-pages@v4

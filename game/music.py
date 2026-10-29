@@ -21,7 +21,7 @@ class MusicPlayer:
             self.status = "Música desativada."
             return False
         directory = Path(__file__).resolve().parents[1] / "assets" / "audio"
-        track = next((directory / name for name in ("theme.ogg", "theme.mp3")
+        track = next((directory / name for name in ("theme.ogg", "theme.mp3", "theme.wav")
                       if (directory / name).is_file()), None)
         if track is None:
             self.status = "Música autoral opcional ausente."

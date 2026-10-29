@@ -1,5 +1,8 @@
 """Ponto de entrada do RPG de arena AgentOS, sem efeitos ao importar."""
 
+import asyncio
+import sys
+
 if __package__:
     from .progression import Progressao
     from .world import GameWorld
@@ -41,12 +44,13 @@ def desenhar_hud(tela, fonte, progressao: Progressao, *, compacto=False, damage=
         tela.blit(imagem, posicao)
 
 
-def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
+async def main_async(*, max_frames=None, capture_path=None, start_mode=None) -> None:
     """max_frames limita smoke tests; capture_path salva o último quadro."""
     if max_frames is not None and (not isinstance(max_frames, int) or max_frames < 1):
         raise ValueError("max_frames deve ser um inteiro positivo")
     import pygame
 
+    browser = sys.platform == "emscripten"
     audio = None
     music = None
     try:
@@ -63,12 +67,14 @@ def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
         presentation_clock = 0.0
         audio = AudioBus(mundo.effects.settings)
         music = MusicPlayer(mundo.effects.settings)
-        music.start()
+        if not browser:
+            music.start()
         executando = True
         quadros = 0
 
         while executando:
-            ui_dt = relogio.tick(60) / 1000.0
+            # No navegador o agendador WASM fornece o ritmo: tick(60) bloquearia.
+            ui_dt = relogio.tick(0 if browser else 60) / 1000.0
             # Interface usa tempo real; animações e regras têm um passo limitado.
             dt = min(ui_dt, 0.05)
             presentation_clock += ui_dt
@@ -83,6 +89,8 @@ def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
                 mundo.advance_presentation(ui_dt)
             selected = False
             for evento in pygame.event.get():
+                if browser and evento.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                    music.start()
                 if evento.type == pygame.QUIT:
                     executando = False
                 elif evento.type == pygame.KEYDOWN:
@@ -182,6 +190,7 @@ def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
             quadros += 1
             if max_frames is not None and quadros >= max_frames:
                 executando = False
+            await asyncio.sleep(0)
         if capture_path is not None:
             pygame.image.save(tela, str(capture_path))
     finally:
@@ -190,6 +199,11 @@ def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
         if audio is not None:
             audio.close()
         pygame.quit()
+
+
+def main(*, max_frames=None, capture_path=None, start_mode=None) -> None:
+    """Entrada desktop síncrona preservada; o navegador aguarda main_async."""
+    asyncio.run(main_async(max_frames=max_frames, capture_path=capture_path, start_mode=start_mode))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+{
+  "source": "Firewall_8bit.wav",
+  "source_sha256": "94843430fc2f790d45a2082b440a39006ef66fc239e5638b6aa66a15d83f501f",
+  "duration_seconds": 63.063,
+  "sample_rate": 44100,
+  "channels": 2,
+  "playback_speed": 0.8,
+  "seam_crossfade_seconds": 0.75,
+  "method": "Linear PCM resampling at constant 0.8x speed and pitch; seamless loop."
+}

@@ -24,3 +24,7 @@ reports/
 
 # Logs
 *.log
+
+# Staging Pygbag e pacotes web reproduzíveis
+build/
+dist/

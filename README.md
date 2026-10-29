@@ -1,5 +1,11 @@
 # AgentOS — Cyber Defense
 
+Versão de navegador preparada com Pygbag: veja [WEB.md](WEB.md) para build,
+servidor local e publicação manual no GitHub Pages. O pacote está em
+`dist/cyber-defense-web.zip`; a versão desktop continua pelo comando abaixo.
+A música autoral Firewall_8bit toca em loop com velocidade fixa de 0,8×,
+preparada offline. Detalhes em `assets/audio/README.md`.
+
 Roguelite 2D de hordas em Python e Pygame, com jogador e inimigos em pixel art
 animada, arena digital de 2400×1600 e câmera suave. SENTINEL-01
 é um antivírus que protege o núcleo do sistema operacional contra vírus,
