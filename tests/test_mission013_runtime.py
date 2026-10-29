@@ -65,7 +65,7 @@ class RuntimeAsyncTests(unittest.TestCase):
                     task = asyncio.create_task(observer())
                     await app.main_async(max_frames=4)
                     assert yielded.await_count >= 4, yielded.await_count
-                    assert all(call.args == (0,) for call in yielded.await_args_list)
+                    assert all(0 <= call.args[0] <= 1/60 for call in yielded.await_args_list)
                     assert len(turns) == 3, turns
                     assert clock.tick.call_count == 4
                     assert all(call.args == (0,) for call in clock.tick.call_args_list)

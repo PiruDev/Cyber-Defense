@@ -54,6 +54,48 @@ playtest WebAssembly em navegador real. Teclado, tela cheia, autoplay e fluidez
 no navegador ainda precisam de conferência manual; os testes CPython/SDL não
 comprovam esses comportamentos no WebAssembly.
 
+## Diagnóstico de cortes de áudio
+
+O mixer agora é pré-configurado antes de `pygame.init()`. No navegador há até
+quatro vozes de efeitos e dois sons novos por quadro, com duplicatas rápidas
+filtradas; o desktop mantém oito vozes/quatro sons. Os oito efeitos continuam
+pré-carregados e a música mantém seu stream em loop, sem recriação por quadro.
+Volume só é enviado ao mixer quando muda. O navegador cede controle a cada
+quadro e possui limite cooperativo de 60 FPS, sem espera bloqueante.
+
+Para comparar buffers, recarregue a página completa com cada URL abaixo,
+depois clique em Iniciar. O launcher encaminha o parâmetro ao iframe:
+
+```text
+http://127.0.0.1:8000/?audio_buffer=512
+http://127.0.0.1:8000/?audio_buffer=1024
+http://127.0.0.1:8000/?audio_buffer=2048
+```
+
+No Pages, acrescente o mesmo `?audio_buffer=...` à URL do jogo. Recarregar é
+necessário porque o buffer é definido antes de abrir o mixer. O padrão continua
+512; não foi declarado um tamanho vencedor sem audição no navegador. A configuração
+é solicitada ao SDL e o backend pode limitar seu efeito; `get_init()` não informa
+o tamanho efetivamente usado. Para desktop, use a variável `CYBER_AUDIO_BUFFER`.
+
+**Atraso** é o intervalo entre ação e som; **estalo** é um clique breve;
+**corte** é uma interrupção na reprodução. Buffers maiores aumentam o orçamento
+de amostras, mas também podem aumentar atraso. Compare o mesmo trecho por um
+minuto em menu, combate e inventário, sem alternar abas durante cada amostra.
+Um som lento/grave constante por causa de 0,8× não equivale a cortes sob carga.
+
+Comparação local reproduzível (não mede som audível nem executa WebAssembly):
+
+```powershell
+.venv/Scripts/python.exe scripts/benchmark_audio.py --frames 120 --output reports/audio-comparison.json
+```
+
+Foram testados 512, 1024 e 2048 em CPython/SDL dummy e na política web simulada,
+com música, dez inimigos e partículas. Testes e build passaram. O host de acesso
+automatizado ao navegador estava indisponível; estalos/cortes e latência real
+no Pages permanecem sujeitos a esse teste manual. Detalhes das medições em
+`reports/web-audio-fix.md`. Nenhuma mecânica ou efeito visual foi removido.
+
 ## GitHub Pages — publicação manual
 
 Nenhuma publicação foi executada ao preparar estes arquivos. Envie o código a um repositório GitHub quando desejar. Em **Settings → Pages**, selecione **GitHub Actions** como fonte. Em **Actions → Cyber Defense — build e Pages manual → Run workflow**:

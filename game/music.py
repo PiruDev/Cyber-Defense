@@ -11,6 +11,7 @@ class MusicPlayer:
         self._started = False
         self._playing = False
         self._pygame = None
+        self._last_volume = None
 
     def start(self) -> bool:
         """Inicia uma única reprodução em loop; ausência de arquivo é normal."""
@@ -52,7 +53,9 @@ class MusicPlayer:
             volume = max(0.0, min(1.0, volume))
             if not getattr(self.settings, "music_enabled", True):
                 volume = 0.0
-            self._pygame.mixer.music.set_volume(volume)
+            if volume != self._last_volume:
+                self._pygame.mixer.music.set_volume(volume)
+                self._last_volume = volume
         except Exception:
             self.enabled = False
 

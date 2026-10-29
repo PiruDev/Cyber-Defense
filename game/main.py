@@ -2,6 +2,7 @@
 
 import asyncio
 import sys
+from time import perf_counter
 
 if __package__:
     from .progression import Progressao
@@ -9,6 +10,7 @@ if __package__:
     from .interface import create_fonts, render_world, render_overlay
     from .card_ui import card_rects
     from .audio import AudioBus
+    from .audio_config import preconfigure
     from .effect_render import render_effects, render_confirmation
     from .cyber_ui import render_menu, menu_rects, weapon_rects
     from .music import MusicPlayer
@@ -24,6 +26,7 @@ else:
     from game.interface import create_fonts, render_world, render_overlay
     from game.card_ui import card_rects
     from game.audio import AudioBus
+    from game.audio_config import preconfigure
     from game.effect_render import render_effects, render_confirmation
     from game.cyber_ui import render_menu, menu_rects, weapon_rects
     from game.music import MusicPlayer
@@ -54,6 +57,7 @@ async def main_async(*, max_frames=None, capture_path=None, start_mode=None) -> 
     audio = None
     music = None
     try:
+        preconfigure(pygame, browser)
         pygame.init()
         tela = pygame.display.set_mode((1100, 770))
         pygame.display.set_caption("AgentOS | CYBER DEFENSE — SENTINEL-01")
@@ -73,6 +77,7 @@ async def main_async(*, max_frames=None, capture_path=None, start_mode=None) -> 
         quadros = 0
 
         while executando:
+            frame_started = perf_counter()
             # No navegador o agendador WASM fornece o ritmo: tick(60) bloquearia.
             ui_dt = relogio.tick(0 if browser else 60) / 1000.0
             # Interface usa tempo real; animações e regras têm um passo limitado.
@@ -190,7 +195,12 @@ async def main_async(*, max_frames=None, capture_path=None, start_mode=None) -> 
             quadros += 1
             if max_frames is not None and quadros >= max_frames:
                 executando = False
-            await asyncio.sleep(0)
+            remaining = 0
+            if browser and executando:
+                # Cede tempo ao áudio/eventos também em telas de alta frequência.
+                remaining = max(0, 1 / 60 - (perf_counter() - frame_started))
+            # Um único yield evita perder dois ciclos do agendador do navegador.
+            await asyncio.sleep(remaining)
         if capture_path is not None:
             pygame.image.save(tela, str(capture_path))
     finally:

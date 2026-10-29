@@ -2,6 +2,10 @@
 
 from array import array
 from math import pi, sin
+import sys
+from time import monotonic
+
+from .audio_config import requested_buffer
 
 
 _TONES = {
@@ -29,7 +33,7 @@ _ALIASES = {
 
 
 class AudioBus:
-    """Toca até quatro eventos por quadro e oito vozes simultâneas.
+    """Desktop: 4 eventos/8 vozes; web: 2 eventos/4 vozes, sem duplicatas rápidas.
 
     O chamador entrega eventos já consumidos; este objeto não guarda nem repete
     eventos. Dispositivo indisponível desativa apenas o áudio.
@@ -41,6 +45,11 @@ class AudioBus:
         self._pygame = None
         self._sounds = {}
         self._channels = []
+        self._web = sys.platform == "emscripten"
+        self._voice_limit = 4 if self._web else 8
+        self._event_limit = 2 if self._web else 4
+        self._last_play = {}
+        self._last_volume = None
         if not settings.audio_enabled:
             return
         try:
@@ -48,13 +57,13 @@ class AudioBus:
 
             self._pygame = pygame
             if pygame.mixer.get_init() is None:
-                pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+                pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=requested_buffer(self._web))
             frequency, size, channels = pygame.mixer.get_init()
             if size not in (-8, 8, -16, 16, -32, 32) or channels < 1:
                 return
-            if pygame.mixer.get_num_channels() < 8:
-                pygame.mixer.set_num_channels(8)
-            self._channels = [pygame.mixer.Channel(index) for index in range(8)]
+            if pygame.mixer.get_num_channels() < self._voice_limit:
+                pygame.mixer.set_num_channels(self._voice_limit)
+            self._channels = [pygame.mixer.Channel(index) for index in range(self._voice_limit)]
             for kind, tone in _TONES.items():
                 self._sounds[kind] = pygame.mixer.Sound(
                     buffer=self._samples(*tone, frequency, size, channels))
@@ -91,21 +100,33 @@ class AudioBus:
         played = 0
         try:
             volume = max(0.0, min(1.0, float(self.settings.volume)))
+            if volume != self._last_volume:
+                for voice in self._channels:
+                    voice.set_volume(volume)
+                self._last_volume = volume
+            now = monotonic() if self._web else 0
+            seen = set()
+            used = set()
             for event in events:
                 kind = getattr(event, "kind", None)
                 if kind is None and isinstance(event, dict):
                     kind = event.get("kind")
-                sound = self._sounds.get(_ALIASES.get(kind, kind))
+                kind = _ALIASES.get(kind, kind)
+                sound = self._sounds.get(kind)
                 if sound is None:
                     continue
+                if self._web and (kind in seen or now - self._last_play.get(kind, -1) < .035):
+                    continue
                 channel = next((voice for voice in self._channels
-                                if not voice.get_busy()), None)
+                                if id(voice) not in used and not voice.get_busy()), None)
                 if channel is None:
                     break
-                channel.set_volume(volume)
                 channel.play(sound)
+                used.add(id(channel))
+                seen.add(kind)
+                self._last_play[kind] = now
                 played += 1
-                if played >= 4:
+                if played >= self._event_limit:
                     break
         except Exception:
             self.enabled = False
